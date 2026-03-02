@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Выживание на арене</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="arena_style.css"> <!-- НОВОЕ -->
 </head>
 <body>
     <div class="game-container" id="gameContainer">
@@ -71,6 +72,65 @@
                     <!-- Рецепты крафта -->
                 </div>
             </div>
+            <!-- Экран 5: Арена (Survivors-style) -->
+<div class="screen" id="screenArena">
+    <div class="arena-game-container">
+        <!-- Верхняя панель с информацией -->
+        <div class="arena-header">
+            <div class="arena-stats">
+                <div class="stat">❤️ <span id="arenaHp">100</span>/<span id="arenaMaxHp">100</span></div>
+                <div class="stat">⚔️ <span id="arenaAttack">15</span></div>
+                <div class="stat">⏱️ <span id="arenaTimer">0:00</span></div>
+                <div class="stat">🎯 Ур. <span id="arenaLevel">1</span></div>
+            </div>
+            
+            <!-- Добавляем прогресс-бар опыта -->
+            <div class="progress-bar-container">
+                <div class="progress-bar">
+                    <div class="progress-bar-fill" id="expProgressBar" style="width: 0%"></div>
+                    <span class="progress-text" id="expText">0/100</span>
+                </div>
+            </div>
+            
+            <!-- ========== ЯЧЕЙКИ ДЛЯ БАФФОВ ========== -->
+            <div class="arena-buffs" id="arenaBuffs">
+                <div class="buff-slot empty" id="buffSlot1" title="Слот баффа 1">?</div>
+                <div class="buff-slot empty" id="buffSlot2" title="Слот баффа 2">?</div>
+                <div class="buff-slot empty" id="buffSlot3" title="Слот баффа 3">?</div>
+                <div class="buff-slot empty" id="buffSlot4" title="Слот баффа 4">?</div>
+                <div class="buff-slot empty" id="buffSlot5" title="Слот баффа 5">?</div>
+            </div>
+            
+            <!-- Добавляем слоты навыков -->
+            <div class="arena-skills" id="arenaSkills">
+                <div class="skill-slot" id="skillSlot1"></div>
+                <div class="skill-slot" id="skillSlot2"></div>
+                <div class="skill-slot" id="skillSlot3"></div>
+                <div class="skill-slot" id="skillSlot4"></div>
+                <div class="skill-slot" id="skillSlot5"></div>
+            </div>
+            
+            <button class="pause-btn" id="pauseBtn">⏸️</button>
+        </div>
+
+        <!-- Canvas для игры -->
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+        <!-- Джойстик для мобильных устройств -->
+        <div class="joystick-container" id="joystickContainer">
+            <div class="joystick-base">
+                <div class="joystick-thumb" id="joystickThumb"></div>
+            </div>
+        </div>
+
+        <!-- Пауза/меню выхода -->
+        <div class="pause-menu" id="pauseMenu" style="display: none;">
+            <h3>Пауза</h3>
+            <button class="resume-btn" id="resumeBtn">Продолжить</button>
+            <button class="exit-arena-btn" id="exitArenaBtn">Выйти с арены</button>
+        </div>
+    </div>
+</div>
         </main>
 
         <!-- Нижняя навигация -->
@@ -90,23 +150,53 @@
         </div>
     </div>
 
-    <!-- Подключение скриптов -->
-    <!-- Подключение скриптов в правильном порядке -->
+    <!-- Конфигурации - сначала загружаем все настройки -->
+    <script src="js/config/heroClasses.js"></script>
+    <script src="js/config/enemyTypes.js"></script>
+    <script src="js/config/weapons.js"></script>
+    <script src="js/config/skills.js"></script>
+    <script src="js/config/locations.js"></script>
+
+    <!-- Core классы -->
     <script src="js/core/GameState.js"></script>
-    <script src="js/core/Hero.js"></script>
     <script src="js/core/Item.js"></script>
+    <script src="js/core/Hero.js"></script>
     <script src="js/core/Shop.js"></script>
     <script src="js/core/Achievements.js"></script>
     <script src="js/core/QuestSystem.js"></script>
     <script src="js/core/Warehouse.js"></script>
     <script src="js/core/CustomCraftSystem.js"></script>
     <script src="js/core/Recipe.js"></script>
+    <script src="js/core/Skill.js"></script>
+
+    <!-- Шаблоны UI -->
+    <script src="js/ui/templates/heroCard.js"></script>
+    <script src="js/ui/templates/skillChoice.js"></script>
+    <script src="js/ui/templates/inventory.js"></script>
+    <script src="js/ui/templates/shopItem.js"></script>
+    <script src="js/ui/templates/craftItem.js"></script>
+    <script src="js/ui/templates/notification.js"></script>
+
+    <!-- Классы арены -->
+    <script src="js/arena/GameEntity.js"></script>
+    <script src="js/arena/SpriteManager.js"></script>
+    <script src="js/arena/SurvivorsArena.js"></script>
+    <script src="js/arena/ArenaController.js"></script>
+
+    <!-- UI -->
     <script src="js/ui/TimeManager.js"></script>
     <script src="js/ui/SoundManager.js"></script>
     <script src="js/ui/UIManager.js"></script>
     <script src="js/ui/HeroScreen.js"></script>
     <script src="js/ui/ModalManager.js"></script>
     <script src="js/game.js"></script>
+
+    <!-- Новые скрипты -->
+    <script src="js/ui/templates/achievements.js"></script>
+    <!-- Баффы и UI -->
+    <script src="js/core/BuffSystem.js"></script>
+    <script src="js/arena/BuffUIManager.js"></script>  <!-- НОВЫЙ ФАЙЛ -->
+    <script src="js/arena/EnemyGenerator.js"></script>
 </body>
 </body>
     
