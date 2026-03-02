@@ -1,11 +1,11 @@
 // Функция для создания тестовых героев
 function createTestHeroes() {
     return [
-        new Hero('hero1', 'Торгар', { hp: 120, attack: 18, defense: 12, speed: 5 }, 'warrior'),
-        new Hero('hero2', 'Эльвира', { hp: 80, attack: 22, defense: 6, speed: 5 }, 'archer'),
-        new Hero('hero3', 'Мерлин', { hp: 70, attack: 25, defense: 4, speed: 5 }, 'mage'),
-        new Hero('hero4', 'Шэдоу', { hp: 85, attack: 20, defense: 5, speed: 5 }, 'rogue'),
-        new Hero('hero5', 'Ульрик', { hp: 140, attack: 15, defense: 15, speed: 6 }, 'paladin') // Новый герой
+        new Hero('hero1', 'Торгар', { hp: 120, attack: 18, defense: 12, speed: 10 }, 'warrior'),
+        new Hero('hero2', 'Эльвира', { hp: 80, attack: 22, defense: 6, speed: 10 }, 'archer'),
+        new Hero('hero3', 'Мерлин', { hp: 70, attack: 25, defense: 4, speed: 10 }, 'mage'),
+        new Hero('hero4', 'Шэдоу', { hp: 85, attack: 20, defense: 5, speed: 10 }, 'rogue'),
+        new Hero('hero5', 'Ульрик', { hp: 140, attack: 15, defense: 15, speed: 10 }, 'paladin') // Новый герой
     ];
 }
 
@@ -112,11 +112,11 @@ function initializeGame() {
     console.log('🎮 Инициализация игры...');
     
     // === 1. СОЗДАЁМ ГЕРОЕВ ===
-    const warrior = new Hero('hero1', 'Торгар', { hp: 120, attack: 18, defense: 12, speed: 5 }, 'warrior');
-    const archer = new Hero('hero2', 'Эльвира', { hp: 80, attack: 22, defense: 6, speed: 5 }, 'archer');
-    const mage = new Hero('hero3', 'Мерлин', { hp: 70, attack: 25, defense: 4, speed: 5 }, 'mage');
-    const rogue = new Hero('hero4', 'Шэдоу', { hp: 85, attack: 20, defense: 5, speed: 5 }, 'rogue');
-    const paladin = new Hero('hero5', 'Ульрик', { hp: 140, attack: 15, defense: 15, speed: 6 }, 'paladin');
+    const warrior = new Hero('hero1', 'Торгар', { hp: 120, attack: 18, defense: 12, speed: 10 }, 'warrior');
+    const archer = new Hero('hero2', 'Эльвира', { hp: 80, attack: 22, defense: 6, speed: 10 }, 'archer');
+    const mage = new Hero('hero3', 'Мерлин', { hp: 70, attack: 25, defense: 4, speed: 10 }, 'mage');
+    const rogue = new Hero('hero4', 'Шэдоу', { hp: 85, attack: 20, defense: 5, speed: 10 }, 'rogue');
+    const paladin = new Hero('hero5', 'Ульрик', { hp: 140, attack: 15, defense: 15, speed: 10 }, 'paladin');
     
     // Добавляем героев в общее состояние игры
     window.GameState.heroes.push(warrior, archer, mage, rogue, paladin);

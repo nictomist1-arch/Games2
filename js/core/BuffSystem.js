@@ -103,7 +103,7 @@ class BuffManager {
                 name: 'Скорость',
                 type: 'speed',
                 value: 5,
-                duration: 10000,
+                duration: 20,
                 icon: '⚡',
                 description: 'Увеличивает скорость на 5 на 20 секунд'
             },
