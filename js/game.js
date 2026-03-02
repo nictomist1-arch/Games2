@@ -40,6 +40,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Инициализируем магазин
     window.GameState.initShop();
     
+    // Инициализируем систему крафта
+    window.GameState.initRecipes();
+    
     // Инициализация UI
     window.uiManager = new UIManager();
     
@@ -73,15 +76,25 @@ document.addEventListener('DOMContentLoaded', () => {
                     currentHero.addExp(10);
                 }
                 
-                // Случайная награда материалами
-                if (Math.random() < 0.3) {
-                    const materials = ['wood', 'metal', 'cloth'];
-                    const randomMat = materials[Math.floor(Math.random() * materials.length)];
-                    window.GameState.updateMaterial(randomMat, 1);
-                    alert(`Матч начат! Получено 10 опыта и 1 ${randomMat}.`);
-                } else {
-                    alert(`Матч начат! Получено 10 опыта.`);
+                // Добавляем награды за бой (материалы и возможные рецепты)
+                const rewards = window.GameState.addBattleRewards();
+                
+                let message = `Матч завершен в локации ${location}!\n`;
+                message += `Герой ${currentHero.name} получил 10 опыта.\n`;
+                
+                const materialsGained = rewards.materials.filter(m => m.amount > 0);
+                if (materialsGained.length > 0) {
+                    message += `Получены материалы: ${materialsGained.map(m => {
+                        const names = { wood: 'древесина', metal: 'железо', cloth: 'ткань' };
+                        return `${names[m.type]}: ${m.amount}`;
+                    }).join(', ')}\n`;
                 }
+                
+                if (rewards.newRecipe) {
+                    message += `🔓 Открыт новый рецепт: ${rewards.newRecipe.name}!`;
+                }
+                
+                alert(message);
             } else {
                 alert(`Недостаточно ${costType}!`);
             }
@@ -96,11 +109,12 @@ document.addEventListener('DOMContentLoaded', () => {
         passiveInfo.innerHTML = `
             <p>⏱️ Ресурсы накапливаются автоматически (1/сек)</p>
             <p>🏪 Магазин обновляется каждые 30 секунд</p>
+            <p>🔨 За бой можно получить материалы и новые рецепты (30%)</p>
         `;
         lobbyElement.appendChild(passiveInfo);
     }
     
-    console.log('Игра запущена! Версия 3: Магазин и экономика');
+    console.log('Игра запущена! Магазин и крафт инициализированы.');
 });
 
 // Сохранение перед закрытием

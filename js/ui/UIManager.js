@@ -65,6 +65,8 @@ class UIManager {
                 this.renderHeroes();
             } else if (screenId === 'shop') {
                 this.renderShop();
+            } else if (screenId === 'craft') { // НОВОЕ
+                this.renderCraft();
             }
         }
     }
@@ -86,6 +88,11 @@ class UIManager {
             // Проверяем, активен ли экран магазина
             if (this.screens.shop && this.screens.shop.classList.contains('active')) {
                 this.renderShop();
+            }
+            
+            // Проверяем, активен ли экран крафта
+            if (this.screens.craft && this.screens.craft.classList.contains('active')) {
+                this.renderCraft();
             }
         });
     }
@@ -291,6 +298,141 @@ class UIManager {
         });
     }
     
+    /**
+     * Отрисовывает экран крафта
+     */
+    renderCraft() {
+        const container = document.getElementById('craftRecipes');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        if (!window.GameState.recipeManager) {
+            container.innerHTML = '<div class="empty-state">Система крафта не инициализирована</div>';
+            return;
+        }
+        
+        const currentHero = window.GameState.getCurrentHero();
+        if (!currentHero) {
+            container.innerHTML = '<div class="empty-state">Сначала выберите героя</div>';
+            return;
+        }
+        
+        // Отображаем доступные материалы
+        const materials = window.GameState.getMaterials();
+        const materialsDiv = document.createElement('div');
+        materialsDiv.className = 'materials-display';
+        materialsDiv.innerHTML = `
+            <div class="material-item"> 🌲 <span id="materialWood">${materials.wood}</span> древесины</div>
+            <div class="material-item"> ⛓️ <span id="materialIron">${materials.iron}</span> железа</div>
+            <div class="material-item"> 🌯 <span id="materialCloth">${materials.cloth}</span> ткани</div>
+        `;
+        container.appendChild(materialsDiv);
+        
+        // Заголовок с открытыми рецептами
+        const title = document.createElement('h3');
+        title.textContent = 'Доступные рецепты:';
+        title.style.marginBottom = '15px';
+        container.appendChild(title);
+        
+        // Отображаем открытые рецепты
+        const unlockedRecipes = window.GameState.recipeManager.getUnlockedRecipes();
+        
+        if (unlockedRecipes.length === 0) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'empty-state';
+            emptyDiv.innerHTML = '<p>Нет доступных рецептов. Сражайтесь, чтобы открыть новые!</p>';
+            container.appendChild(emptyDiv);
+            return;
+        }
+        
+        const recipesGrid = document.createElement('div');
+        recipesGrid.className = 'craft-grid';
+        
+        unlockedRecipes.forEach(recipe => {
+            // Преобразуем материалы для проверки
+            const materialsForCheck = {
+                'material_wood': window.GameState.materials.wood || 0,
+                'material_iron': window.GameState.materials.metal || 0,
+                'material_cloth': window.GameState.materials.cloth || 0
+            };
+            
+            // Проверяем, можно ли скрафтить
+            const canCraft = recipe.canCraft(currentHero, materialsForCheck);
+            
+            const recipeCard = document.createElement('div');
+            recipeCard.className = 'craft-item';
+            
+            // Собираем строку с материалами
+            const materialsList = recipe.materials.map(m => {
+                const icons = {
+                    'material_wood': '🌲',
+                    'material_iron': '⛓️',
+                    'material_cloth': '🌯'
+                };
+                return `${icons[m.itemId] || '📦'} ${m.quantity}`;
+            }).join(' + ');
+            
+            // Определяем цвет редкости
+            let rarityColor = '#ffffff';
+            if (recipe.resultItem.rarity === 'rare') rarityColor = '#4caaff';
+            if (recipe.resultItem.rarity === 'epic') rarityColor = '#aa4cff';
+            if (recipe.resultItem.rarity === 'legendary') rarityColor = '#ffaa4c';
+            
+            recipeCard.innerHTML = `
+                <div class="item-icon" style="font-size: 3rem;">${recipe.resultItem.icon}</div>
+                <h4 style="color: ${rarityColor};">${recipe.name}</h4>
+                <p class="item-description">${recipe.resultItem.description}</p>
+                <div class="craft-materials" style="margin: 10px 0;">
+                    <strong>Требуется:</strong> ${materialsList}
+                </div>
+                <div class="craft-requirements" style="font-size: 0.9rem; color: #a0a0a0; margin-bottom: 10px;">
+                    Уровень: ${recipe.requiredLevel}
+                </div>
+                <button class="craft-item-btn" data-recipe-id="${recipe.id}" 
+                    style="${!canCraft.success ? 'background: #666; cursor: not-allowed;' : ''}"
+                    ${!canCraft.success ? 'disabled' : ''}>
+                    ${canCraft.success ? '🔨 Скрафтить' : canCraft.message}
+                </button>
+            `;
+            
+            recipesGrid.appendChild(recipeCard);
+        });
+        
+        container.appendChild(recipesGrid);
+        
+        // Добавляем обработчики крафта
+        document.querySelectorAll('.craft-item-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                if (btn.disabled) return;
+                
+                const recipeId = e.target.dataset.recipeId;
+                const currentHero = window.GameState.getCurrentHero();
+                
+                if (!currentHero) {
+                    alert('Сначала выберите героя!');
+                    return;
+                }
+                
+                const result = window.GameState.craftItem(recipeId, currentHero.id);
+                
+                if (result.success) {
+                    alert(result.message);
+                    this.renderCraft(); // Обновляем экран крафта
+                    
+                    // Если открылся новый рецепт, показываем уведомление
+                    if (result.newRecipe) {
+                        setTimeout(() => {
+                            alert(`🔓 Открыт новый рецепт: ${result.newRecipe.name}!`);
+                        }, 100);
+                    }
+                } else {
+                    alert(result.message);
+                }
+            });
+        });
+    }
+    
     getHeroTypeIcon(type) {
         const icons = {
             'warrior': '⚔️',
@@ -337,6 +479,10 @@ class UIManager {
         }
         
         try {
+            // Подсчитываем свободные слоты
+            const freeSlots = hero.inventory.filter(slot => slot === null).length;
+            const totalSlots = hero.inventory.length;
+            
             // Создаем сетку инвентаря 3x3
             const inventoryGrid = [];
             for (let i = 0; i < 3; i++) {
@@ -352,13 +498,14 @@ class UIManager {
                         if (item.rarity === 'legendary') rarityColor = '#ffaa4c';
                         
                         row += `
-                            <div class="inventory-slot filled" data-slot="${index}" data-item-id="${item.id}" style="border-color: ${rarityColor};">
+                            <div class="inventory-slot filled" data-slot="${index}" data-item-id="${item.id}" style="border-color: ${rarityColor}; position: relative;">
                                 <div class="item-icon">${item.icon || '📦'}</div>
                                 <div class="item-name">${item.name || 'Предмет'}</div>
                                 <div class="item-type">${item.type || 'unknown'}</div>
                                 ${item.type === 'consumable' ? 
-                                    '<button class="use-item-btn">Использовать</button>' : 
-                                    ''}
+                                    '<button class="use-item-btn" data-hero-id="' + heroId + '" data-slot="' + index + '">Использовать</button>' : 
+                                    (item.type === 'weapon' || item.type === 'armor' || item.type === 'accessory' ? 
+                                    '<button class="equip-item-btn" data-hero-id="' + heroId + '" data-slot="' + index + '">Экипировать</button>' : '')}
                             </div>
                         `;
                     } else {
@@ -373,6 +520,9 @@ class UIManager {
             
             this.modalBody.innerHTML = `
                 <h2>Инвентарь ${hero.name || 'Героя'}</h2>
+                <div class="inventory-info" style="margin-bottom: 10px; text-align: center; color: #ffd700;">
+                    Свободно: ${freeSlots}/${totalSlots} слотов
+                </div>
                 <div class="inventory-container">
                     ${inventoryGrid.join('')}
                 </div>
@@ -414,7 +564,7 @@ class UIManager {
             // Добавляем обработчики для предметов
             this.modalBody.querySelectorAll('.inventory-slot.filled').forEach(slot => {
                 slot.addEventListener('click', (e) => {
-                    if (e.target.classList.contains('use-item-btn')) return;
+                    if (e.target.classList.contains('use-item-btn') || e.target.classList.contains('equip-item-btn')) return;
                     
                     const slotIndex = parseInt(slot.dataset.slot);
                     const item = hero.inventory[slotIndex];
@@ -435,6 +585,31 @@ class UIManager {
                     
                     if (item && item.type === 'consumable') {
                         this.useConsumable(hero, item, slotIndex);
+                    }
+                });
+            });
+            
+            // Обработчики для экипировки
+            this.modalBody.querySelectorAll('.equip-item-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const slot = e.target.closest('.inventory-slot');
+                    const slotIndex = parseInt(slot.dataset.slot);
+                    const item = hero.inventory[slotIndex];
+                    
+                    if (item) {
+                        let equipSlot = 'weapon';
+                        if (item.type === 'armor') equipSlot = 'armor';
+                        if (item.type === 'accessory') equipSlot = 'accessory';
+                        
+                        if (hero.equip(item, equipSlot)) {
+                            hero.inventory[slotIndex] = null;
+                            alert(`Экипировано: ${item.name}`);
+                            this.modal.style.display = 'none';
+                            this.showHeroInventory(heroId);
+                        } else {
+                            alert('Не удалось экипировать предмет');
+                        }
                     }
                 });
             });

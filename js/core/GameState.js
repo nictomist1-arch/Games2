@@ -19,6 +19,7 @@ const GameState = {
     unlockedRecipes: [],
     settings: { sound: true, music: true },
     shop: null, // Будет инициализирован позже
+    recipeManager: null, // Менеджер рецептов для крафта
     
     _listeners: [],
     lastPassiveUpdate: Date.now(),
@@ -54,6 +55,100 @@ const GameState = {
     initShop() {
         this.shop = new window.Shop();
         this.notify();
+    },
+    
+    /**
+     * Инициализация рецептов
+     */
+    initRecipes() {
+        this.recipeManager = new window.RecipeManager();
+        this.notify();
+    },
+    
+    /**
+     * Получить все материалы для отображения в удобном формате
+     * @returns {Object} - Объект с материалами
+     */
+    getMaterials() {
+        return {
+            wood: this.materials.wood || 0,
+            iron: this.materials.metal || 0,
+            cloth: this.materials.cloth || 0,
+            icons: {
+                wood: '🌲',
+                iron: '⛓️',
+                cloth: '🌯'
+            }
+        };
+    },
+    
+    /**
+     * Крафт предмета
+     * @param {string} recipeId - ID рецепта
+     * @param {string} heroId - ID героя
+     * @returns {Object} - Результат крафта
+     */
+    craftItem(recipeId, heroId) {
+        if (!this.recipeManager) {
+            return { success: false, message: 'Система крафта не инициализирована' };
+        }
+        
+        const hero = this.heroes.find(h => h.id === heroId);
+        if (!hero) {
+            return { success: false, message: 'Герой не найден' };
+        }
+        
+        // Преобразуем материалы в нужный формат для RecipeManager
+        const materialsForCraft = {
+            'material_wood': this.materials.wood || 0,
+            'material_iron': this.materials.metal || 0,
+            'material_cloth': this.materials.cloth || 0
+        };
+        
+        // Крафтим предмет
+        const result = this.recipeManager.craft(recipeId, hero, materialsForCraft);
+        
+        if (result.success) {
+            // Обновляем материалы в GameState после крафта
+            this.materials.wood = materialsForCraft['material_wood'];
+            this.materials.metal = materialsForCraft['material_iron'];
+            this.materials.cloth = materialsForCraft['material_cloth'];
+            this.notify(); // Обновляем UI
+        }
+        
+        return result;
+    },
+    
+    /**
+     * Добавляет награды после боя (материалы и возможные рецепты)
+     * @returns {Object} - Объект с наградами
+     */
+    addBattleRewards() {
+        // Случайные материалы
+        const materials = [
+            { type: 'wood', amount: Math.floor(Math.random() * 3) + 1 },
+            { type: 'metal', amount: Math.floor(Math.random() * 2) },
+            { type: 'cloth', amount: Math.floor(Math.random() * 2) }
+        ];
+        
+        materials.forEach(m => {
+            if (m.amount > 0 && this.materials[m.type] !== undefined) {
+                this.materials[m.type] += m.amount;
+            }
+        });
+        
+        // Шанс открыть новый рецепт (30%)
+        if (this.recipeManager && Math.random() < 0.3) {
+            const newRecipe = this.recipeManager.tryUnlockRandomRecipe();
+            if (newRecipe) {
+                return {
+                    materials: materials,
+                    newRecipe: newRecipe
+                };
+            }
+        }
+        
+        return { materials: materials };
     },
     
     // Пассивное обновление ресурсов
